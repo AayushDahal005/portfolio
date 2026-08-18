@@ -61,6 +61,22 @@
     --accent:#5578A8;
     --accent-dim:#3E5A80;
     --hairline:rgba(241,241,238,0.08);
+    --grain-op:0.035;
+    --grid-op:0.35;
+    --glow-op:0.10;
+  }
+
+  :root[data-theme="light"]{
+    --base:#F2F1EC;
+    --base-raised:#FFFFFF;
+    --primary:#16181C;
+    --secondary:#6B6F76;
+    --accent:#3E5A80;
+    --accent-dim:#B9C8DA;
+    --hairline:rgba(22,24,28,0.09);
+    --grain-op:0.02;
+    --grid-op:0.5;
+    --glow-op:0.06;
   }
 
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -73,6 +89,7 @@
     font-family:'Inter',sans-serif;
     font-weight:300;
     overflow-x:hidden;
+    transition:background 0.5s ease, color 0.5s ease;
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -104,8 +121,9 @@
     inset:0;
     z-index:0;
     pointer-events:none;
-    opacity:0.035;
+    opacity:var(--grain-op);
     mix-blend-mode:overlay;
+    transition:opacity 0.5s ease;
   }
 
   .grid-bg{
@@ -117,8 +135,9 @@
       linear-gradient(var(--hairline) 1px, transparent 1px),
       linear-gradient(90deg, var(--hairline) 1px, transparent 1px);
     background-size:64px 64px;
-    opacity:0.35;
+    opacity:var(--grid-op);
     mask-image:radial-gradient(ellipse 60% 50% at 50% 30%, black 0%, transparent 75%);
+    transition:opacity 0.5s ease;
   }
 
   .glow{
@@ -130,9 +149,10 @@
     height:60vw;
     max-width:900px;
     max-height:900px;
-    background:radial-gradient(circle, rgba(85,120,168,0.10) 0%, transparent 65%);
+    background:radial-gradient(circle, rgba(85,120,168,var(--glow-op)) 0%, transparent 65%);
     z-index:0;
     pointer-events:none;
+    transition:background 0.5s ease;
   }
 
   .content{position:relative;z-index:1;}
@@ -146,8 +166,9 @@
     justify-content:space-between;
     align-items:center;
     padding:28px 6vw;
-    background:linear-gradient(to bottom, rgba(11,12,14,0.85), transparent);
+    background:linear-gradient(to bottom, var(--base), transparent);
     backdrop-filter:blur(2px);
+    transition:background 0.5s ease;
   }
 
   .nav-name{
@@ -155,6 +176,12 @@
     letter-spacing:0.14em;
     font-weight:500;
     color:var(--primary);
+  }
+
+  .nav-right{
+    display:flex;
+    align-items:center;
+    gap:36px;
   }
 
   .nav-links{
@@ -180,6 +207,35 @@
   }
   .nav-links a:hover, .nav-links a:focus-visible{color:var(--primary);}
   .nav-links a:hover::after, .nav-links a:focus-visible::after{width:100%;}
+
+  /* THEME TOGGLE */
+  .theme-toggle{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    border:1px solid var(--hairline);
+    background:transparent;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:border-color 0.4s ease, background 0.4s ease;
+  }
+  .theme-toggle:hover, .theme-toggle:focus-visible{
+    border-color:var(--accent);
+  }
+  .theme-toggle svg{
+    width:15px;
+    height:15px;
+    stroke:var(--primary);
+    fill:none;
+    stroke-width:1.4;
+  }
+  .theme-toggle .icon-moon{display:block;}
+  .theme-toggle .icon-sun{display:none;}
+  :root[data-theme="light"] .theme-toggle .icon-moon{display:none;}
+  :root[data-theme="light"] .theme-toggle .icon-sun{display:block;}
 
   .nav-toggle{display:none;}
 
@@ -603,12 +659,18 @@
 
 <nav>
   <a href="#top" class="nav-name" aria-label="Aayush Dahal — Home">AAYUSH DAHAL</a>
-  <div class="nav-links">
-    <a href="#about">About</a>
-    <a href="#work">Work</a>
-    <a href="#journey">Journey</a>
-    <a href="#exploring">Exploring</a>
-    <a href="#contact">Contact</a>
+  <div class="nav-right">
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#work">Work</a>
+      <a href="#journey">Journey</a>
+      <a href="#exploring">Exploring</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+      <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
   </div>
 </nav>
 
@@ -787,7 +849,7 @@
 <!-- CONTACT -->
 <section id="contact" class="contact-section">
   <span class="eyebrow reveal" style="display:block;">Contact</span>
-  <h2 class="contact-title reveal">Where can you find him?</h2>
+  <h2 class="contact-title reveal">Where can you find me?</h2>
   <div class="contact-links reveal">
     <a href="https://github.com/AayushDahal005" target="_blank" rel="noopener">GitHub</a>
    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=dahalayush2018@gmail.com&su=Hello%20Ayush%2C%20I%20visited%20your%20portfolio" target="_blank">
@@ -815,6 +877,34 @@
     });
   }, {threshold:0.15});
   revealEls.forEach(el=>io.observe(el));
+
+  // THEME TOGGLE
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeToggle');
+
+  function applyTheme(theme){
+    if(theme === 'light'){
+      root.setAttribute('data-theme', 'light');
+    } else {
+      root.removeAttribute('data-theme');
+    }
+  }
+
+  let savedTheme = null;
+  try{ savedTheme = localStorage.getItem('theme'); }catch(e){}
+
+  if(savedTheme){
+    applyTheme(savedTheme);
+  } else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches){
+    applyTheme('light');
+  }
+
+  themeBtn.addEventListener('click', ()=>{
+    const isLight = root.getAttribute('data-theme') === 'light';
+    const next = isLight ? 'dark' : 'light';
+    applyTheme(next);
+    try{ localStorage.setItem('theme', next); }catch(e){}
+  });
 </script>
 
 </body>
