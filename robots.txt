@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://aayushdahal.com/sitemap.xml
+Sitemap: https://aayush-dahal.com.np/sitemap.xml
