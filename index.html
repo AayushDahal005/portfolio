@@ -872,7 +872,7 @@
   <h2 class="contact-title reveal">Where can you find me?</h2>
   <div class="contact-links reveal">
     <a href="https://github.com/AayushDahal005" target="_blank" rel="noopener">GitHub</a>
-    <a href="mailto:dahalayush2018@gmail.com?subject=Hello%20Ayush%2C%20I%20visited%20your%20portfolio">Email</a>
+    <a id="emailLink" href="mailto:dahalayush2018@gmail.com?subject=Hello%20Ayush%2C%20I%20visited%20your%20portfolio">Email</a>
     <a href="https://www.instagram.com/yushh_005/" target="_blank" rel="noopener">Instagram</a>
   </div>
   <div class="contact-secondary reveal">
@@ -923,6 +923,16 @@
     applyTheme(next);
     try{ localStorage.setItem('theme', next); }catch(e){}
   });
+
+  // EMAIL LINK: use Gmail's web compose on desktop (works without a configured
+  // mail app), and a standard mailto: on mobile (works with the native mail app).
+  const emailLink = document.getElementById('emailLink');
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (!isMobile && emailLink) {
+    emailLink.href = 'https://mail.google.com/mail/?view=cm&fs=1&to=dahalayush2018@gmail.com&su=Hello%20Ayush%2C%20I%20visited%20your%20portfolio';
+    emailLink.target = '_blank';
+    emailLink.rel = 'noopener';
+  }
 </script>
 
 </body>
