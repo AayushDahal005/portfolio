@@ -26,12 +26,10 @@
 <meta name="twitter:image" content="https://aayush-dahal.com.np/img1.jpg">
 <meta name="twitter:image:alt" content="Aayush Dahal — Computer Science Student and Developer">
 
-<!-- FAVICON -->
-<link rel="icon" type="image/png" sizes="16x16" href="./favicon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="./favicon.png">
-<link rel="apple-touch-icon" sizes="180x180" href="./favicon.png">
-<link rel="shortcut icon" href="./favicon.png">
-
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&display=swap" rel="stylesheet">
 
@@ -257,7 +255,7 @@
     justify-content:center;
     align-items:center;
     text-align:center;
-    padding:0 6vw;
+    padding:130px 6vw 60px;
     position:relative;
   }
 
@@ -271,7 +269,7 @@
   }
 
   .hero h1{
-    font-size:clamp(48px, 10vw, 128px);
+    font-size:clamp(40px, 10vw, 128px);
     font-weight:500;
     letter-spacing:0.01em;
     margin-top:22px;
@@ -285,7 +283,7 @@
     font-family:'Fraunces',serif;
     font-style:italic;
     font-weight:400;
-    font-size:clamp(20px,3vw,28px);
+    font-size:clamp(18px,3vw,28px);
     color:var(--primary);
     opacity:0;
     animation:fadeUp 1.1s ease forwards 0.65s;
@@ -366,6 +364,22 @@
   @keyframes pulse{
     0%,100%{opacity:0.3;}
     50%{opacity:1;}
+  }
+
+  /* Shorter viewports (small laptops, landscape phones, browser toolbars eating space):
+     tighten the hero so nothing needs to hide behind the fixed nav or get clipped. */
+  @media (max-height:720px){
+    .hero{padding:110px 6vw 40px;}
+    .hero h1{font-size:clamp(36px, 8vw, 90px);}
+    .hero-tagline{margin-top:16px;}
+    .hero-role{margin-top:10px;}
+    .hero-cta{margin-top:32px;}
+    .scroll-cue{display:none;}
+  }
+
+  @media (max-width:480px){
+    nav{padding:20px 5vw;}
+    .hero{padding:100px 5vw 40px;}
   }
 
   /* SECTION SHARED */
@@ -681,7 +695,7 @@
 </nav>
 
 <!-- HERO -->
-<section class="hero" id="top" style="padding-top:0;">
+<section class="hero" id="top">
   <div class="hero-eyebrow">Computer Science · Kathmandu</div>
   <h1>AAYUSH DAHAL</h1>
   <div class="hero-tagline">Quietly building. Constantly becoming.</div>
@@ -858,9 +872,7 @@
   <h2 class="contact-title reveal">Where can you find me?</h2>
   <div class="contact-links reveal">
     <a href="https://github.com/AayushDahal005" target="_blank" rel="noopener">GitHub</a>
-   <a href="https://mail.google.com/mail/?view=cm&fs=1&to=dahalayush2018@gmail.com&su=Hello%20Ayush%2C%20I%20visited%20your%20portfolio" target="_blank">
-    Email
-</a>
+    <a href="mailto:dahalayush2018@gmail.com?subject=Hello%20Ayush%2C%20I%20visited%20your%20portfolio">Email</a>
     <a href="https://www.instagram.com/yushh_005/" target="_blank" rel="noopener">Instagram</a>
   </div>
   <div class="contact-secondary reveal">
