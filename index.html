@@ -243,8 +243,30 @@
 
   .nav-toggle{display:none;}
 
+  .nav-cta{
+    font-size:12px;
+    letter-spacing:0.08em;
+    padding:9px 22px;
+    border-radius:2px;
+    background:var(--accent);
+    color:var(--base);
+    border:1px solid var(--accent);
+    white-space:nowrap;
+    transition:background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+  }
+  .nav-cta:hover, .nav-cta:focus-visible{
+    background:var(--accent-dim);
+    border-color:var(--accent-dim);
+    color:var(--primary);
+  }
+
   @media(max-width:720px){
     .nav-links{display:none;}
+    .nav-cta{padding:8px 16px;font-size:11px;}
+  }
+
+  @media(max-width:480px){
+    .nav-cta{padding:7px 13px;}
   }
 
   /* HERO */
@@ -654,6 +676,71 @@
   }
   .contact-secondary a:hover{color:var(--primary);}
 
+  .contact-form{
+    max-width:560px;
+    margin:0 auto 50px;
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+  }
+
+  .form-row{
+    display:flex;
+    gap:28px;
+  }
+
+  .form-field{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .form-field label{
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:var(--secondary);
+  }
+
+  .form-field input,
+  .form-field textarea{
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    font-weight:300;
+    color:var(--primary);
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--hairline);
+    padding:10px 2px;
+    transition:border-color 0.35s ease;
+    resize:vertical;
+  }
+
+  .form-field input:focus,
+  .form-field textarea:focus{
+    border-bottom-color:var(--accent);
+  }
+
+  .form-field textarea{min-height:120px;line-height:1.7;}
+
+  .form-submit{
+    align-self:flex-start;
+    margin-top:6px;
+  }
+
+  .form-status{
+    font-size:13px;
+    letter-spacing:0.03em;
+    min-height:18px;
+  }
+  .form-status.success{color:var(--accent);}
+  .form-status.error{color:#B85C5C;}
+
+  @media(max-width:600px){
+    .form-row{flex-direction:column;gap:28px;}
+  }
+
   footer{
     text-align:center;
     padding:40px 6vw 60px;
@@ -687,6 +774,7 @@
       <a href="#exploring">Exploring</a>
       <a href="#contact">Contact</a>
     </div>
+    <a href="Aayushdahal_CV.pdf" download="Aayush_Dahal_CV.pdf" class="nav-cta">Resume</a>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
       <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
@@ -869,10 +957,29 @@
 <!-- CONTACT -->
 <section id="contact" class="contact-section">
   <span class="eyebrow reveal" style="display:block;">Contact</span>
-  <h2 class="contact-title reveal">Where can you find me?</h2>
+  <h2 class="contact-title reveal">Have something to say? Send it straight to my inbox.</h2>
+
+  <form class="contact-form reveal" id="contactForm">
+    <div class="form-row">
+      <div class="form-field">
+        <label for="cf-name">Name</label>
+        <input type="text" id="cf-name" name="name" autocomplete="name" required>
+      </div>
+      <div class="form-field">
+        <label for="cf-email">Email</label>
+        <input type="email" id="cf-email" name="email" autocomplete="email" required>
+      </div>
+    </div>
+    <div class="form-field">
+      <label for="cf-message">Message</label>
+      <textarea id="cf-message" name="message" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary form-submit" id="cf-submit">Send Message</button>
+    <div class="form-status" id="cf-status" role="status" aria-live="polite"></div>
+  </form>
+
   <div class="contact-links reveal">
     <a href="https://github.com/AayushDahal005" target="_blank" rel="noopener">GitHub</a>
-    <a id="emailLink" href="mailto:dahalayush2018@gmail.com?subject=Hello%20Ayush%2C%20I%20visited%20your%20portfolio">Email</a>
     <a href="https://www.instagram.com/yushh_005/" target="_blank" rel="noopener">Instagram</a>
   </div>
   <div class="contact-secondary reveal">
@@ -924,14 +1031,47 @@
     try{ localStorage.setItem('theme', next); }catch(e){}
   });
 
-  // EMAIL LINK: use Gmail's web compose on desktop (works without a configured
-  // mail app), and a standard mailto: on mobile (works with the native mail app).
-  const emailLink = document.getElementById('emailLink');
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  if (!isMobile && emailLink) {
-    emailLink.href = 'https://mail.google.com/mail/?view=cm&fs=1&to=dahalayush2018@gmail.com&su=Hello%20Ayush%2C%20I%20visited%20your%20portfolio';
-    emailLink.target = '_blank';
-    emailLink.rel = 'noopener';
+  // CONTACT FORM: submits to Formspree, which forwards the message straight
+  // to dahalayush2018@gmail.com without needing a backend of your own.
+  // Replace FORM_ENDPOINT below with your own Formspree endpoint (see notes).
+  const FORM_ENDPOINT = 'https://formspree.io/f/xqpaplen';
+
+  const contactForm = document.getElementById('contactForm');
+  const cfStatus = document.getElementById('cf-status');
+  const cfSubmit = document.getElementById('cf-submit');
+
+  if (contactForm) {
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      cfStatus.textContent = '';
+      cfStatus.className = 'form-status';
+      cfSubmit.disabled = true;
+      cfSubmit.textContent = 'Sending…';
+
+      const formData = new FormData(contactForm);
+
+      try {
+        const response = await fetch(FORM_ENDPOINT, {
+          method: 'POST',
+          body: formData,
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.ok) {
+          cfStatus.textContent = 'Thanks — your message is on its way. I\'ll get back to you soon.';
+          cfStatus.classList.add('success');
+          contactForm.reset();
+        } else {
+          throw new Error('Request failed');
+        }
+      } catch (err) {
+        cfStatus.textContent = 'Something went wrong sending that. Please email dahalayush2018@gmail.com directly instead.';
+        cfStatus.classList.add('error');
+      } finally {
+        cfSubmit.disabled = false;
+        cfSubmit.textContent = 'Send Message';
+      }
+    });
   }
 </script>
 
