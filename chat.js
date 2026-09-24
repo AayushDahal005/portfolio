@@ -1,14 +1,4 @@
-// /api/chat.js
-// Vercel serverless function. Keeps the Gemini API key server-side and
-// answers as an assistant for Aayush Dahal's portfolio.
-//
-// Setup:
-//   1. Put this file at  api/chat.js  in your project root (same level as
-//      index.html) and redeploy on Vercel — it's auto-detected, no config
-//      needed for a plain static site.
-//   2. In Vercel → Project → Settings → Environment Variables, add:
-//        GEMINI_API_KEY = <your key from https://aistudio.google.com/apikey>
-//   3. Redeploy so the new env var is picked up.
+// /api/chat.js — Vercel serverless function for the portfolio chat widget.
 
 const SYSTEM_PROMPT = `
 You are the assistant embedded on Aayush Dahal's personal portfolio website.
@@ -18,6 +8,7 @@ the third person ("Aayush is...", "he built..."). If something isn't covered
 by these facts, say you don't have that detail and suggest the visitor use
 the contact form on the site to ask Aayush directly. Never invent facts,
 credentials, or contact details beyond what's listed here.
+Reply in plain text only — no markdown, no bullet symbols.
 
 ABOUT
 - Name: Aayush Dahal, based in Kathmandu, Nepal.
@@ -57,6 +48,27 @@ CONTACT
   contact form on the site rather than guessing at an email address.
 `.trim();
 
+const MODEL = 'gemini-2.0-flash';
+
+// Crude in-memory rate limit. Resets on cold start — good enough to stop
+// casual abuse, not a real defence. Swap for Vercel KV / Upstash if this
+// ever gets meaningful traffic.
+const hits = new Map();
+const WINDOW_MS = 60_000;
+const MAX_REQUESTS = 12;
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const entry = hits.get(ip) || { count: 0, start: now };
+  if (now - entry.start > WINDOW_MS) {
+    entry.count = 0;
+    entry.start = now;
+  }
+  entry.count += 1;
+  hits.set(ip, entry);
+  return entry.count > MAX_REQUESTS;
+}
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -65,7 +77,15 @@ module.exports = async (req, res) => {
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
+    console.error('GEMINI_API_KEY is not set');
     res.status(500).json({ error: 'Server is missing GEMINI_API_KEY' });
+    return;
+  }
+
+  const ip =
+    (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+  if (isRateLimited(ip)) {
+    res.status(429).json({ error: 'Too many requests — try again shortly.' });
     return;
   }
 
@@ -80,8 +100,16 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Cap history length so requests can't grow unbounded.
+  // Cap length, and ensure the conversation opens on a user turn —
+  // Gemini expects that.
   const trimmedHistory = history.slice(-20);
+  while (trimmedHistory.length && trimmedHistory[0].role !== 'user') {
+    trimmedHistory.shift();
+  }
+  if (!trimmedHistory.length) {
+    res.status(400).json({ error: 'history must start with a user message' });
+    return;
+  }
 
   const contents = trimmedHistory.map((turn) => ({
     role: turn.role === 'model' ? 'model' : 'user',
@@ -90,12 +118,15 @@ module.exports = async (req, res) => {
 
   try {
     const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey
+        },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] }, // ← camelCase
           contents,
           generationConfig: {
             temperature: 0.6,
@@ -114,8 +145,10 @@ module.exports = async (req, res) => {
 
     const data = await geminiRes.json();
     const reply =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
-      "Sorry, I didn't catch that — could you rephrase?";
+      data?.candidates?.[0]?.content?.parts
+        ?.map((p) => p.text || '')
+        .join('')
+        .trim() || "Sorry, I didn't catch that — could you rephrase?";
 
     res.status(200).json({ reply });
   } catch (err) {
