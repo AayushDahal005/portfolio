@@ -48,7 +48,7 @@ CONTACT
   contact form on the site rather than guessing at an email address.
 `.trim();
 
-const MODEL = 'gemini-2.0-flash';
+const MODEL = 'gemini-2.5-flash';
 
 // Crude in-memory rate limit. Resets on cold start — good enough to stop
 // casual abuse, not a real defence. Swap for Vercel KV / Upstash if this
