@@ -20,8 +20,7 @@ ABOUT
 PROJECTS
 1. Online Flight Booking System — a college e-commerce project: a flight
    booking platform with a React frontend and a Laravel/PHP backend,
-   including a working payment flow. Built end-to-end rather than as a
-   static demo.
+   including a working payment flow.
 2. AI/ML Chatbot — built during a bootcamp on WordPress and AI/ML chatbot
    development. Full-stack: React + TypeScript frontend, Express backend,
    MySQL for storage, and the Gemini API for conversation logic.
@@ -29,7 +28,7 @@ PROJECTS
    under the Lawrence IT Club, handling logistics and coordination.
 
 JOURNEY / EDUCATION
-- SEE (secondary education) at Sarbanam Shikshyalaya — GPA 4.0.
+- SEE at Sarbanam Shikshyalaya — GPA 4.0.
 - +2 Science at Reliance International Academy — GPA 3.64.
 - B.Sc. CSIT at St. Lawrence College, 2023–present, 6th semester.
 - Vice President of the Lawrence IT Club for two consecutive years.
@@ -37,8 +36,7 @@ JOURNEY / EDUCATION
   solving; now moving into full applications.
 
 CURRENTLY EXPLORING
-- React (frontend), Laravel (backend), general web and app development
-  practice.
+- React (frontend), Laravel (backend), general web and app development.
 
 CONTACT
 - GitHub: https://github.com/AayushDahal005
@@ -48,26 +46,10 @@ CONTACT
   contact form on the site rather than guessing at an email address.
 `.trim();
 
+// ✅ Use a CURRENT model. gemini-2.0-flash is retired.
 const MODEL = 'gemini-2.5-flash';
 
-// Crude in-memory rate limit. Resets on cold start — good enough to stop
-// casual abuse, not a real defence. Swap for Vercel KV / Upstash if this
-// ever gets meaningful traffic.
-const hits = new Map();
-const WINDOW_MS = 60_000;
-const MAX_REQUESTS = 12;
-
-function isRateLimited(ip) {
-  const now = Date.now();
-  const entry = hits.get(ip) || { count: 0, start: now };
-  if (now - entry.start > WINDOW_MS) {
-    entry.count = 0;
-    entry.start = now;
-  }
-  entry.count += 1;
-  hits.set(ip, entry);
-  return entry.count > MAX_REQUESTS;
-}
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -82,13 +64,6 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const ip =
-    (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
-  if (isRateLimited(ip)) {
-    res.status(429).json({ error: 'Too many requests — try again shortly.' });
-    return;
-  }
-
   let history;
   try {
     ({ history } = req.body || {});
@@ -100,8 +75,7 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // Cap length, and ensure the conversation opens on a user turn —
-  // Gemini expects that.
+  // Cap length, and ensure the conversation starts on a user turn.
   const trimmedHistory = history.slice(-20);
   while (trimmedHistory.length && trimmedHistory[0].role !== 'user') {
     trimmedHistory.shift();
@@ -117,24 +91,23 @@ module.exports = async (req, res) => {
   }));
 
   try {
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey
+    const geminiRes = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey          // ✅ Key in header, not URL
+      },
+      body: JSON.stringify({
+        systemInstruction: {               // ✅ camelCase, not snake_case
+          parts: [{ text: SYSTEM_PROMPT }]
         },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] }, // ← camelCase
-          contents,
-          generationConfig: {
-            temperature: 0.6,
-            maxOutputTokens: 400
-          }
-        })
-      }
-    );
+        contents,
+        generationConfig: {
+          temperature: 0.6,
+          maxOutputTokens: 400
+        }
+      })
+    });
 
     if (!geminiRes.ok) {
       const errText = await geminiRes.text();
